@@ -68,6 +68,14 @@ class JoinFieldListIntention : JoinListIntentionBase<RsBlockFields, RsNamedField
     suffix = " "
 )
 
+class JoinLiteralFieldListIntention : JoinListIntentionBase<RsStructLiteralBody, RsStructLiteralField>(
+    RsStructLiteralBody::class.java,
+    RsStructLiteralField::class.java,
+    "Put fields on one line",
+    prefix = " ",
+    suffix = " "
+)
+
 class JoinVariantListIntention : JoinListIntentionBase<RsEnumBody, RsEnumVariant>(
     RsEnumBody::class.java,
     RsEnumVariant::class.java,
