@@ -28,6 +28,26 @@ class ChopLiteralFieldListIntentionTest : RsIntentionTestBase(ChopLiteralFieldLi
         }
     """)
 
+    fun `test two parameters`() = doAvailableTest("""
+        struct S { x: i32, y: i32 }
+        fn foo() {
+S { /*caret*/x:
+
+i32,
+y:
+
+i32 };
+        }
+    """, """
+        struct S { x: i32, y: i32 }
+        fn foo() {
+            S {
+                x: i32,
+                y: i32
+            };
+        }
+    """)
+
     fun `test has all line breaks`() = doUnavailableTest("""
         struct S { x: i32, y: i32, z: i32 }
         fn foo() {
@@ -124,6 +144,23 @@ class ChopLiteralFieldListIntentionTest : RsIntentionTestBase(ChopLiteralFieldLi
                 x: i32, // comment x
                 y: i32,
                 z: i32 // comment z
+            };
+        }
+    """)
+
+    fun `test dotdot`() = doAvailableTest("""
+        struct S {  x: i32, y: i32, z: i32 }
+        fn foo() {
+            let s = S { x: 0, y: 0, z: 0 };
+            S { /*caret*/x: 1, ..s };
+        }
+   """, """
+        struct S {  x: i32, y: i32, z: i32 }
+        fn foo() {
+            let s = S { x: 0, y: 0, z: 0 };
+            S {
+                x: 1,
+                ..s
             };
         }
     """)

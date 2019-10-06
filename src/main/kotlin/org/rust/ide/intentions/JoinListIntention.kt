@@ -24,8 +24,8 @@ abstract class JoinListIntentionBase<TList : RsElement, TElement : RsElement>(
 ) : ListIntentionBase<TList, TElement>(listClass, elementClass, intentionText) {
     override fun findApplicableContext(project: Project, editor: Editor, element: PsiElement): TList? {
         val list = element.listContext ?: return null
-        val elements = list.elements
-        if (elements.isEmpty() || !hasLineBreakBefore(elements.first()) && elements.none { hasLineBreakAfter(it) }) {
+        val elements = getElements(list)
+        if (elements.isEmpty() || !hasLineBreakBefore(elements.first()) && elements.none { hasLineBreakAfter(list, it) }) {
             return null
         }
         return list
@@ -33,7 +33,7 @@ abstract class JoinListIntentionBase<TList : RsElement, TElement : RsElement>(
 
     override fun invoke(project: Project, editor: Editor, ctx: TList) {
         val document = editor.document
-        val elements = ctx.elements
+        val elements = getElements(ctx)
         nextBreak(elements.last())?.replace(prefix, document)
         elements.dropLast(1).asReversed().forEach { nextBreak(it)?.replace(" ", document) }
         prevBreak(elements.first())?.replace(suffix, document)

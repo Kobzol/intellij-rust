@@ -27,10 +27,11 @@ abstract class ListIntentionBase<TList : RsElement, TElement : RsElement>(
     protected val PsiElement.listContext: TList?
         get() = PsiTreeUtil.getParentOfType(this, listClass, true)
 
-    protected val TList.elements: List<TElement>
-        get() = PsiTreeUtil.getChildrenOfTypeAsList(this, elementClass)
+    protected open fun getElements(context: TList): List<PsiElement> = PsiTreeUtil.getChildrenOfTypeAsList(context, elementClass)
 
-    protected fun hasLineBreakAfter(element: PsiElement): Boolean = nextBreak(element) != null
+    protected open fun getEndElement(ctx: TList, element: PsiElement): PsiElement = element
+
+    protected fun hasLineBreakAfter(ctx: TList, element: PsiElement): Boolean = nextBreak(getEndElement(ctx, element)) != null
 
     protected fun nextBreak(element: PsiElement): PsiWhiteSpace? = element.rightSiblings.lineBreak()
 

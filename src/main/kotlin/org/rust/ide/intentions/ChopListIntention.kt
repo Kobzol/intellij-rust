@@ -12,6 +12,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.codeStyle.CodeStyleManager
 import org.rust.lang.core.psi.*
 import org.rust.lang.core.psi.ext.RsElement
+import org.rust.lang.core.psi.ext.elementType
 import org.rust.lang.core.psi.ext.startOffset
 
 abstract class ChopListIntentionBase<TList : RsElement, TElement : RsElement>(
@@ -21,8 +22,8 @@ abstract class ChopListIntentionBase<TList : RsElement, TElement : RsElement>(
 ) : ListIntentionBase<TList, TElement>(listClass, elementClass, intentionText) {
     override fun findApplicableContext(project: Project, editor: Editor, element: PsiElement): TList? {
         val list = element.listContext ?: return null
-        val elements = list.elements
-        if (elements.size < 2 || elements.dropLast(1).all { hasLineBreakAfter(it) }) return null
+        val elements = getElements(list)
+        if (elements.size < 2 || elements.dropLast(1).all { hasLineBreakAfter(list, it) }) return null
         return list
     }
 
@@ -30,10 +31,13 @@ abstract class ChopListIntentionBase<TList : RsElement, TElement : RsElement>(
         val document = editor.document
         val startOffset = ctx.startOffset
 
-        val elements = ctx.elements
+        val elements = getElements(ctx)
         val lastElementOrTrailingComma = elements.last().let { commaAfter(it) ?: it }
         if (!hasLineBreakAfter(lastElementOrTrailingComma)) {
             lastElementOrTrailingComma.textRange?.endOffset?.also { document.insertString(it, "\n") }
+        val last = elements.last()
+        if (!hasLineBreakAfter(ctx, last)) {
+            getEndElement(ctx, last).textRange?.endOffset?.also { document.insertString(it, "\n") }
         }
         elements.asReversed().forEach {
             if (!hasLineBreakBefore(it)) {
@@ -69,11 +73,22 @@ class ChopFieldListIntention : ChopListIntentionBase<RsBlockFields, RsNamedField
     "Put fields on separate lines"
 )
 
+/**
+ * This intention has a special case for the dotdot (..) element.
+ */
 class ChopLiteralFieldListIntention : ChopListIntentionBase<RsStructLiteralBody, RsStructLiteralField>(
     RsStructLiteralBody::class.java,
     RsStructLiteralField::class.java,
     "Put fields on separate lines"
-)
+) {
+    override fun getElements(context: RsStructLiteralBody): List<PsiElement> = super.getElements(context) + listOfNotNull(context.dotdot)
+    override fun getEndElement(ctx: RsStructLiteralBody, element: PsiElement): PsiElement {
+        return if (element.elementType == RsElementTypes.DOTDOT) {
+            ctx.expr ?: element
+        }
+        else element
+    }
+}
 
 class ChopVariantListIntention : ChopListIntentionBase<RsEnumBody, RsEnumVariant>(
     RsEnumBody::class.java,
