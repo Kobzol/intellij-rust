@@ -10,47 +10,47 @@ class JoinLiteralFieldListIntentionTest : RsIntentionTestBase(JoinLiteralFieldLi
         struct S { x: i32 }
         fn foo() {
             S {
-                /*caret*/x: i32
+                /*caret*/x: 0
             };
         }
     """, """
         struct S { x: i32 }
         fn foo() {
-            S { x: i32 };
+            S { x: 0 };
         }""")
 
     fun `test two parameter`() = doAvailableTest("""
         struct S { x: i32, y: i32 }
         fn foo() {
             S {
-                /*caret*/x: i32,
-                y: i32
+                /*caret*/x: 0,
+                y: 0
             };
         }
     """, """
         struct S { x: i32, y: i32 }
         fn foo() {
-            S { x: i32, y: i32 };
+            S { x: 0, y: 0 };
         }
     """)
 
     fun `test no line breaks`() = doUnavailableTest("""
         struct S { x: i32, y: i32, z: i32 }
         fn foo() {
-            S { /*caret*/x: i32, y: i32, z: i32 };
+            S { /*caret*/x: 0, y: 0, z: 0 };
         }
     """)
 
     fun `test has some line breaks`() = doAvailableTest("""
         struct S { x: i32, y: i32, z: i32 }
         fn foo() {
-            S { x: i32, /*caret*/y: i32, 
-                z: i32 };
+            S { x: 0, /*caret*/y: 0, 
+                z: 0 };
         }
     """, """
         struct S { x: i32, y: i32, z: i32 }
         fn foo() {
-            S { x: i32, y: i32, z: i32 };
+            S { x: 0, y: 0, z: 0 };
         }
     """)
 
@@ -58,38 +58,75 @@ class JoinLiteralFieldListIntentionTest : RsIntentionTestBase(JoinLiteralFieldLi
         struct S { x: i32, y: i32, z: i32 }
         fn foo() {
             S { 
-                x: i32, y: i32, z: i32/*caret*/ 
+                x: 0, y: 0, z: 0/*caret*/ 
             };
         }
     """, """
         struct S { x: i32, y: i32, z: i32 }
         fn foo() {
-            S { x: i32, y: i32, z: i32 };
+            S { x: 0, y: 0, z: 0 };
         }
     """)
 
     fun `test has comment`() = doUnavailableTest("""
         struct S { x: i32, y: i32, z: i32 }
         fn foo() {
-            S { /*caret*/x: i32, /* comment */ y: i32, z: i32 };
+            S { /*caret*/x: 0, /* comment */ y: 0, z: 0 };
         }
     """)
 
     fun `test has comment 2`() = doAvailableTest("""
         struct S { x: i32, y: i32, z: i32 }
         fn foo() {
-            S { /*caret*/x: i32, /*
+            S { /*caret*/x: 0, /*
                 comment
-                */ y: i32,
-                z: i32
+                */ y: 0,
+                z: 0
             };
         }
     """, """
         struct S { x: i32, y: i32, z: i32 }
         fn foo() {
-            S { x: i32, /*
+            S { x: 0, /*
                 comment
-                */ y: i32, z: i32 };
+                */ y: 0, z: 0 };
+        }
+    """)
+
+    fun `test init shorthand`() = doAvailableTest("""
+        struct S {  x: i32, y: i32, z: i32 }
+        fn foo() {
+            let x = 1;
+            let y = 2;
+            S {
+                /*caret*/x,
+                z: 3,
+                y
+            };
+        }
+   """, """
+        struct S {  x: i32, y: i32, z: i32 }
+        fn foo() {
+            let x = 1;
+            let y = 2;
+            S { x, z: 3, y };
+        }
+    """)
+
+    fun `test dotdot`() = doAvailableTest("""
+        struct S {  x: i32, y: i32, z: i32 }
+        fn foo() {
+            let s = S { x: 0, y: 1, z: 2 };
+            S {
+                /*caret*/x: 0,
+                ..s
+            };
+        }
+   """, """
+        struct S {  x: i32, y: i32, z: i32 }
+        fn foo() {
+            let s = S { x: 0, y: 1, z: 2 };
+            S { x: 0, ..s };
         }
     """)
 }

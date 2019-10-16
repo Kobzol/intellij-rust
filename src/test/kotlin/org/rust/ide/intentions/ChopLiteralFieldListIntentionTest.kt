@@ -16,14 +16,14 @@ class ChopLiteralFieldListIntentionTest : RsIntentionTestBase(ChopLiteralFieldLi
     fun `test two parameter`() = doAvailableTest("""
         struct S { x: i32, y: i32 }
         fn foo() {
-            S { /*caret*/x: i32, y: i32 };
+            S { /*caret*/x: 0, y: 0 };
         }
     """, """
         struct S { x: i32, y: i32 }
         fn foo() {
             S {
-                x: i32,
-                y: i32
+                x: 0,
+                y: 0
             };
         }
     """)
@@ -31,12 +31,7 @@ class ChopLiteralFieldListIntentionTest : RsIntentionTestBase(ChopLiteralFieldLi
     fun `test two parameters`() = doAvailableTest("""
         struct S { x: i32, y: i32 }
         fn foo() {
-S { /*caret*/x:
-
-i32,
-y:
-
-i32 };
+            S { /*caret*/x: i32, y: i32 };
         }
     """, """
         struct S { x: i32, y: i32 }
@@ -52,9 +47,9 @@ i32 };
         struct S { x: i32, y: i32, z: i32 }
         fn foo() {
             S {
-                /*caret*/x: i32,
-                y: i32,
-                z: i32
+                /*caret*/x: 0,
+                y: 0,
+                z: 0
             };
         }
     """)
@@ -62,17 +57,17 @@ i32 };
     fun `test has some line breaks`() = doAvailableTest("""
         struct S { x: i32, y: i32, z: i32 }
         fn foo() {
-            S { x: i32, /*caret*/y: i32,
-                z: i32
+            S { x: 0, /*caret*/y: 0,
+                z: 0
             };
         }
     """, """
         struct S { x: i32, y: i32, z: i32 }
         fn foo() {
             S {
-                x: i32,
-                y: i32,
-                z: i32
+                x: 0,
+                y: 0,
+                z: 0
             };
         }
     """)
@@ -81,16 +76,16 @@ i32 };
         struct S { x: i32, y: i32, z: i32 }
         fn foo() {
             S {
-                x: i32, y: i32, z: i32/*caret*/
+                x: 0, y: 0, z: 0/*caret*/
             };
         }
     """, """
         struct S { x: i32, y: i32, z: i32 }
         fn foo() {
             S {
-                x: i32,
-                y: i32,
-                z: i32
+                x: 0,
+                y: 0,
+                z: 0
             };
         }
     """)
@@ -99,9 +94,9 @@ i32 };
         struct S {  x: i32, y: i32, z: i32 }
         fn foo() {
             S { 
-                /*caret*/x: i32, /* comment */ 
-                y: i32,
-                z: i32
+                /*caret*/x: 0, /* comment */ 
+                y: 0,
+                z: 0
             };
         }
     """)
@@ -110,21 +105,21 @@ i32 };
         struct S {  x: i32, y: i32, z: i32 }
         fn foo() {
             S { 
-                /*caret*/x: i32, /*
+                /*caret*/x: 0, /*
                     comment
-                */y: i32,
-                z: i32
+                */y: 0,
+                z: 0
             };
         }
     """, """
         struct S {  x: i32, y: i32, z: i32 }
         fn foo() {
             S {
-                x: i32, /*
+                x: 0, /*
                     comment
                 */
-                y: i32,
-                z: i32
+                y: 0,
+                z: 0
             };
         }
     """)
@@ -133,17 +128,39 @@ i32 };
         struct S {  x: i32, y: i32, z: i32 }
         fn foo() {
             S {
-                /*caret*/x: i32, // comment x
-                y: i32, z: i32 // comment z
+                /*caret*/x: 0, // comment x
+                y: 0, z: 0 // comment z
             };
         }
    """, """
         struct S {  x: i32, y: i32, z: i32 }
         fn foo() {
             S {
-                x: i32, // comment x
-                y: i32,
-                z: i32 // comment z
+                x: 0, // comment x
+                y: 0,
+                z: 0 // comment z
+            };
+        }
+    """)
+
+    fun `test init shorthand`() = doAvailableTest("""
+        struct S {  x: i32, y: i32, z: i32 }
+        fn foo() {
+            let x = 1;
+            let y = 2;
+            S {
+                /*caret*/x, z: 3, y
+            };
+        }
+   """, """
+        struct S {  x: i32, y: i32, z: i32 }
+        fn foo() {
+            let x = 1;
+            let y = 2;
+            S {
+                x,
+                z: 3,
+                y
             };
         }
     """)
