@@ -8,6 +8,7 @@ package org.rust.ide.refactoring.implementMembers
 import com.intellij.codeInsight.hint.HintManager
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.editor.ScrollType
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiWhiteSpace
 import org.rust.ide.inspections.import.RsImportHelper.importTypeReferencesFromElements
@@ -32,7 +33,7 @@ fun generateTraitMembers(impl: RsImplItem, editor: Editor?) {
     if (chosen.isEmpty()) return
     runWriteAction {
         // Non-null was checked by `findMembersToImplement`.
-        insertNewTraitMembers(chosen, impl.members!!, trait)
+        insertNewTraitMembers(chosen, impl.members!!, trait, editor)
     }
 }
 
@@ -48,7 +49,8 @@ private fun findMembersToImplement(impl: RsImplItem): Pair<TraitImplementationIn
 private fun insertNewTraitMembers(
     selected: Collection<RsAbstractable>,
     existingMembers: RsMembers,
-    trait: BoundElement<RsTraitItem>
+    trait: BoundElement<RsTraitItem>,
+    editor: Editor?
 ) {
     checkWriteAccessAllowed()
     if (selected.isEmpty()) return
@@ -104,9 +106,25 @@ private fun insertNewTraitMembers(
             val whitespaces = createExtraWhitespacesAroundFunction(addedMember, next)
             existingMembers.addAfter(whitespaces, addedMember)
         }
+
+        if (addedMember is RsFunction && editor != null)
+        {
+            selectImplementedFunctionBody(addedMember, editor)
+        }
     }
 
     importTypeReferencesFromElements(existingMembers, selected, trait.subst)
+}
+
+private fun selectImplementedFunctionBody(fn: RsFunction, editor: Editor)
+{
+    val block = fn.block ?: return
+    val statement = block.expr ?: block.stmtList.getOrNull(0) ?: return
+
+    val start = statement.textRange.startOffset
+    editor.caretModel.moveToOffset(start)
+    editor.scrollingModel.scrollToCaret(ScrollType.RELATIVE)
+    editor.selectionModel.setSelection(start, statement.textRange.endOffset)
 }
 
 private fun createExtraWhitespacesAroundFunction(left: PsiElement, right: PsiElement): PsiElement {
