@@ -16,9 +16,7 @@ import org.rust.lang.core.macros.expandedFromRecursively
 import org.rust.lang.core.psi.*
 import org.rust.lang.core.psi.ext.*
 import org.rust.lang.core.types.BoundElement
-import org.rust.openapiext.checkReadAccessAllowed
-import org.rust.openapiext.checkWriteAccessAllowed
-import org.rust.openapiext.checkWriteAccessNotAllowed
+import org.rust.openapiext.*
 
 fun generateTraitMembers(impl: RsImplItem, editor: Editor?) {
     checkWriteAccessNotAllowed()
@@ -69,6 +67,7 @@ private fun insertNewTraitMembers(
     }.toMutableList()
     val existingMembersOrder = existingMembersWithPosInTrait.map { it.second }
     val areExistingMembersInTheRightOrder = existingMembersOrder == existingMembersOrder.sorted()
+    val templateMembers = mutableListOf<RsFunction>()
 
     for ((index, newMember) in newMembers.withIndex()) {
         val posInTrait = traitMembers.indexOfFirst {
@@ -107,24 +106,14 @@ private fun insertNewTraitMembers(
             existingMembers.addAfter(whitespaces, addedMember)
         }
 
-        if (addedMember is RsFunction && editor != null)
+        if (addedMember is RsFunction)
         {
-            selectImplementedFunctionBody(addedMember, editor)
+            templateMembers.add(addedMember)
         }
     }
 
     importTypeReferencesFromElements(existingMembers, selected, trait.subst)
-}
-
-private fun selectImplementedFunctionBody(fn: RsFunction, editor: Editor)
-{
-    val block = fn.block ?: return
-    val statement = block.expr ?: block.stmtList.getOrNull(0) ?: return
-
-    val start = statement.textRange.startOffset
-    editor.caretModel.moveToOffset(start)
-    editor.scrollingModel.scrollToCaret(ScrollType.RELATIVE)
-    editor.selectionModel.setSelection(start, statement.textRange.endOffset)
+    editor?.buildAndRunTemplate(existingMembers, templateMembers.mapNotNull { it.block?.expr?.createSmartPointer() })
 }
 
 private fun createExtraWhitespacesAroundFunction(left: PsiElement, right: PsiElement): PsiElement {
