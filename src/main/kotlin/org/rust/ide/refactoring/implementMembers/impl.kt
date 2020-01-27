@@ -67,7 +67,8 @@ private fun insertNewTraitMembers(
     }.toMutableList()
     val existingMembersOrder = existingMembersWithPosInTrait.map { it.second }
     val areExistingMembersInTheRightOrder = existingMembersOrder == existingMembersOrder.sorted()
-    val templateMembers = mutableListOf<RsFunction>()
+    val templateMembers = mutableListOf<RsElement?>()
+    var functionElement: RsElement? = null
 
     for ((index, newMember) in newMembers.withIndex()) {
         val posInTrait = traitMembers.indexOfFirst {
@@ -106,14 +107,19 @@ private fun insertNewTraitMembers(
             existingMembers.addAfter(whitespaces, addedMember)
         }
 
-        if (addedMember is RsFunction)
-        {
-            templateMembers.add(addedMember)
+        when (newMember) {
+            is RsFunction -> if (functionElement == null) {
+                functionElement = newMember.block?.expr
+            }
+            is RsTypeAlias -> templateMembers.add(newMember.typeReference)
+            is RsConstant -> templateMembers.add(newMember.expr)
         }
     }
 
     importTypeReferencesFromElements(existingMembers, selected, trait.subst)
-    editor?.buildAndRunTemplate(existingMembers, templateMembers.mapNotNull { it.block?.expr?.createSmartPointer() })
+
+    val elements = (templateMembers + listOf(functionElement)).filterNotNull()
+    editor?.buildAndRunTemplate(existingMembers, elements.map { it.createSmartPointer() })
 }
 
 private fun createExtraWhitespacesAroundFunction(left: PsiElement, right: PsiElement): PsiElement {
