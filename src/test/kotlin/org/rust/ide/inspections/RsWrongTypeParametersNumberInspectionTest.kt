@@ -29,6 +29,46 @@ class RsWrongTypeParametersNumberInspectionTest : RsInspectionsTestBase(RsWrongT
         type Type = <error>Foo2to3<u8></error>;
     """)
 
+    fun `test fix E0243 number of type parameters is less than expected 1`() = checkFixByText("Add type parameters", """
+        struct Foo2to3<T, U, V = bool> { t: T, u: U, v: V }
+
+        type Type = <error>Foo2to3</error>;
+    """, """
+        struct Foo2to3<T, U, V = bool> { t: T, u: U, v: V }
+
+        type Type = Foo2to3<T, U>;
+    """)
+
+    fun `test fix E0243 number of type parameters is less than expected`() = checkFixByText("Add type parameters", """
+        struct Foo1<T> { t: T }
+        struct Foo2<T, U> { t: T, u: U }
+        struct Foo2to3<T, U, V = bool> { t: T, u: U, v: V }
+
+        struct Err {
+            err1: <error>Foo1</error>,
+            err2: <error>Foo2</error>,
+            err3: <error>Foo2to3</error>,
+        }
+
+        impl <error>Foo1</error> {}
+        fn err(f: <error>Foo2<u32></error>) -> <error>Foo1</error> {}
+        type Type = <error>Foo2to3<u8></error>;
+    """, """
+        struct Foo1<T> { t: T }
+        struct Foo2<T, U> { t: T, u: U }
+        struct Foo2to3<T, U, V = bool> { t: T, u: U, v: V }
+
+        struct Err {
+            err1: <error>Foo1<T></error>,
+            err2: <error>Foo2<T, U></error>,
+            err3: <error>Foo2to3<T, U></error>,
+        }
+
+        impl Foo1<T> {}
+        fn err(f: Foo2<T, U>) -> Foo1<T> {}
+        type Type = Foo2to3<T, U>;
+    """)
+
     fun `test E0243 ignores Fn-traits`() = checkByText("""
         fn foo(f: &mut FnOnce(u32) -> bool) {}  // No annotation despite the fact that FnOnce has a type parameter
     """)
@@ -63,7 +103,7 @@ class RsWrongTypeParametersNumberInspectionTest : RsInspectionsTestBase(RsWrongT
         type Type = <error>Foo1<u8, bool, f64></error>;
     """)
 
-    fun `test fix E0244 no type parameters method `() = checkFixByText("Remove all type parameter", """
+    fun `test fix E0244 no type parameters struct`() = checkFixByText("Remove all type parameter", """
         struct Foo0;
         impl <error>Foo0<caret><u8></error> {}
     """, """
@@ -71,7 +111,7 @@ class RsWrongTypeParametersNumberInspectionTest : RsInspectionsTestBase(RsWrongT
         impl Foo0 {}
     """)
 
-    fun `test E0035 no type parameters method `() = checkByText("""
+    fun `test E0035 no type parameters method`() = checkByText("""
         struct Test;
 
         impl Test {
@@ -85,7 +125,7 @@ class RsWrongTypeParametersNumberInspectionTest : RsInspectionsTestBase(RsWrongT
         }
     """)
 
-    fun `test fix E0035 no type parameters method `() = checkFixByText("Remove all type parameter", """
+    fun `test fix E0035 no type parameters method`() = checkFixByText("Remove all type parameter", """
         struct Test;
 
         impl Test {

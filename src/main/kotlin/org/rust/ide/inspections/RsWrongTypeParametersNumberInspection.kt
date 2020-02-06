@@ -5,6 +5,8 @@
 
 package org.rust.ide.inspections
 
+import com.intellij.codeInspection.LocalQuickFix
+import org.rust.ide.inspections.fixes.AddTypeParameters
 import org.rust.ide.inspections.fixes.RemoveTypeParameter
 import org.rust.lang.core.psi.*
 import org.rust.lang.core.psi.ext.RsElement
@@ -55,14 +57,24 @@ class RsWrongTypeParametersNumberInspection : RsLocalInspectionTool() {
         } ?: return
 
         val problemText = "Wrong number of type parameters: expected ${data.expectedText}, found $nArguments [${data.code}]"
-        if (data.fix) {
-            holder.registerProblem(o, problemText, RemoveTypeParameter())
-        } else {
-            holder.registerProblem(o, problemText)
-        }
+        holder.registerProblem(o, problemText, data.fix)
     }
 
-    data class ProblemData(val expectedText: String, val code: String, val fix: Boolean)
+    data class ProblemData(val expectedText: String, val code: String, val fix: LocalQuickFix? = null)
+
+    private fun getFix(actualArgs: Int, expectedRequiredParams: Int, expectedTotalParams: Int): LocalQuickFix? {
+        return when {
+            expectedTotalParams == 0 -> {
+                RemoveTypeParameter()
+            }
+            actualArgs < expectedRequiredParams -> {
+                AddTypeParameters()
+            }
+            else -> {
+                null
+            }
+        }
+    }
 
     private fun checkBaseType(actualArgs: Int, expectedRequiredParams: Int, expectedTotalParams: Int): ProblemData? {
         val (code, expectedText) = when {
@@ -72,7 +84,7 @@ class RsWrongTypeParametersNumberInspection : RsLocalInspectionTool() {
                 ("E0244" to if (expectedRequiredParams != expectedTotalParams) "at most $expectedTotalParams" else "$expectedTotalParams")
             else -> null
         } ?: return null
-        return ProblemData(expectedText, code, expectedTotalParams == 0)
+        return ProblemData(expectedText, code, getFix(actualArgs, expectedRequiredParams, expectedTotalParams))
     }
 
     private fun checkMethodCall(actualArgs: Int, expectedRequiredParams: Int, expectedTotalParams: Int): ProblemData? {
@@ -83,8 +95,7 @@ class RsWrongTypeParametersNumberInspection : RsLocalInspectionTool() {
                 ("E0036" to if (expectedRequiredParams != expectedTotalParams) "at most $expectedTotalParams" else "$expectedTotalParams")
             else -> null
         } ?: return null
-        return ProblemData(expectedText, code, expectedTotalParams == 0)
-
+        return ProblemData(expectedText, code, getFix(actualArgs, expectedRequiredParams, expectedTotalParams))
     }
 
     private fun checkCallExpr(actualArgs: Int, expectedRequiredParams: Int, expectedTotalParams: Int): ProblemData? {
@@ -93,7 +104,6 @@ class RsWrongTypeParametersNumberInspection : RsLocalInspectionTool() {
                 ("E0087" to if (expectedRequiredParams != expectedTotalParams) "at most $expectedTotalParams" else "$expectedTotalParams")
             else -> null
         } ?: return null
-        return ProblemData(expectedText, code, expectedTotalParams == 0)
-
+        return ProblemData(expectedText, code, getFix(actualArgs, expectedRequiredParams, expectedTotalParams))
     }
 }
