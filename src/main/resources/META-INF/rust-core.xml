@@ -985,6 +985,12 @@
             <add-to-group group-id="GenerateGroup"/>
         </action>
 
+        <action class="org.rust.ide.refactoring.extractFields.ExtractFieldsAction"
+                id="Rust.ExtractFields"
+                text="Extract Fields">
+            <add-to-group group-id="GenerateGroup"/>
+        </action>
+
         <action id="Rust.ReexpandMacrosAction"
                 class="org.rust.lang.core.macros.ReexpandMacrosAction"
                 text="Re-Expand All Rust Macros">
