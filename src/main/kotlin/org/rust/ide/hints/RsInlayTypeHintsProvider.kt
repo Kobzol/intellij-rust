@@ -203,7 +203,7 @@ class RsInlayTypeHintsProvider : InlayHintsProvider<RsInlayTypeHintsProvider.Set
     )
 
     companion object {
-        private val KEY: SettingsKey<Settings> = SettingsKey("rust.type.hints")
+        val KEY: SettingsKey<Settings> = SettingsKey("rust.type.hints")
     }
 }
 

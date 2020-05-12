@@ -132,10 +132,12 @@ class RsChainMethodTypeHintsProviderTest : RsInlayTypeHintsTestBase() {
         val settings = RsChainMethodTypeHintsProvider.Settings(showSameConsecutiveTypes = showSameConsecutiveTypes)
         val originalSettings = service.findSettings(key, RsLanguage) { settings }
         try {
+            service.changeHintTypeStatus(RsInlayTypeHintsProvider.KEY, RsLanguage, false)
             service.storeSettings(key, RsLanguage, settings)
             checkByText(code)
         } finally {
             service.storeSettings(key, RsLanguage, originalSettings)
+            service.changeHintTypeStatus(RsInlayTypeHintsProvider.KEY, RsLanguage, true)
         }
     }
 }
