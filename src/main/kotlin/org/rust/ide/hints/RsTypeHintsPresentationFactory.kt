@@ -7,19 +7,35 @@ package org.rust.ide.hints
 
 import com.intellij.codeInsight.hints.presentation.InlayPresentation
 import com.intellij.codeInsight.hints.presentation.PresentationFactory
+import com.intellij.psi.PsiFile
 import org.rust.ide.presentation.shortPresentableText
+import org.rust.lang.core.psi.RsFile
 import org.rust.lang.core.psi.RsTraitItem
 import org.rust.lang.core.psi.RsTypeAlias
 import org.rust.lang.core.psi.RsTypeParameter
 import org.rust.lang.core.psi.ext.typeParameters
+import org.rust.lang.core.resolve.ImplLookup
 import org.rust.lang.core.types.BoundElement
 import org.rust.lang.core.types.Kind
 import org.rust.lang.core.types.consts.CtConstParameter
 import org.rust.lang.core.types.consts.CtValue
+import org.rust.lang.core.types.implLookupAndKnownItems
 import org.rust.lang.core.types.ty.*
 import org.rust.lang.core.types.type
 
-class RsTypeHintsPresentationFactory(private val factory: PresentationFactory, private val showObviousTypes: Boolean) {
+class RsTypeHintsPresentationFactory(
+    file: PsiFile,
+    private val factory: PresentationFactory,
+    private val showObviousTypes: Boolean
+) {
+    private val lookup: ImplLookup
+    private val iteratorTrait: BoundElement<RsTraitItem>?
+
+    init {
+        val (lookup1, items) = (file as RsFile).implLookupAndKnownItems
+        lookup = lookup1
+        iteratorTrait = items.Iterator?.let { BoundElement(it) }
+    }
 
     // BACKCOMPAT: 2019.3
     @Suppress("DEPRECATION")
@@ -86,6 +102,8 @@ class RsTypeHintsPresentationFactory(private val factory: PresentationFactory, p
         )
 
     private fun adtTypeHint(type: TyAdt, level: Int): InlayPresentation {
+        tryIteratorHint(type, level)?.let { return it }
+
         val aliasedBy = type.aliasedBy
         val alias = aliasedBy?.element
 
@@ -119,6 +137,18 @@ class RsTypeHintsPresentationFactory(private val factory: PresentationFactory, p
             return listOf(typeNamePresentation, collapsible).join()
         }
         return typeNamePresentation
+    }
+
+    /** Creates fake `impl Iterator<Item=...>` presentation if [type] implements `Iterator` trait */
+    private fun tryIteratorHint(type: TyAdt, level: Int): InlayPresentation? {
+        if (iteratorTrait != null) {
+            val assoc = lookup.selectAllProjectionsStrict(type, iteratorTrait)
+            if (assoc != null) {
+                val element = iteratorTrait.copy(assoc = assoc)
+                return anonTypeHint(TyAnon(null, listOf(element)), level - 1)
+            }
+        }
+        return null
     }
 
     private fun referenceTypeHint(type: TyReference, level: Int): InlayPresentation = listOf(

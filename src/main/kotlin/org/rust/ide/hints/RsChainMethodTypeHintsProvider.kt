@@ -64,7 +64,7 @@ class RsChainMethodTypeHintsProvider : InlayHintsProvider<RsChainMethodTypeHints
     override fun getCollectorFor(file: PsiFile, editor: Editor, settings: Settings, sink: InlayHintsSink): InlayHintsCollector? =
         object : FactoryInlayHintsCollector(editor) {
 
-            val typeHintsFactory = RsTypeHintsPresentationFactory(factory, true)
+            val typeHintsFactory = RsTypeHintsPresentationFactory(file, factory, true)
 
             override fun collect(element: PsiElement, editor: Editor, sink: InlayHintsSink): Boolean {
                 if (DumbService.isDumb(element.project)) return true

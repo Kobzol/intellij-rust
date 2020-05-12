@@ -26,8 +26,6 @@ import org.rust.lang.core.types.declaration
 import org.rust.lang.core.types.ty.TyUnknown
 import org.rust.lang.core.types.ty.walk
 import org.rust.lang.core.types.type
-import org.rust.stdext.dequeOf
-import org.rust.stdext.nextOrNull
 import javax.swing.JPanel
 
 class RsInlayTypeHintsProvider : InlayHintsProvider<RsInlayTypeHintsProvider.Settings> {
@@ -95,7 +93,7 @@ class RsInlayTypeHintsProvider : InlayHintsProvider<RsInlayTypeHintsProvider.Set
     override fun getCollectorFor(file: PsiFile, editor: Editor, settings: Settings, sink: InlayHintsSink): InlayHintsCollector? =
         object : FactoryInlayHintsCollector(editor) {
 
-            val typeHintsFactory = RsTypeHintsPresentationFactory(factory, settings.showObviousTypes)
+            val typeHintsFactory = RsTypeHintsPresentationFactory(file, factory, settings.showObviousTypes)
 
             override fun collect(element: PsiElement, editor: Editor, sink: InlayHintsSink): Boolean {
                 if (file.project.service<DumbService>().isDumb) return true
