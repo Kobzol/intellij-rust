@@ -8,18 +8,25 @@ package org.rust.ide.miscExtensions
 import com.intellij.openapi.fileEditor.impl.UniqueNameEditorTabTitleProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import org.rust.cargo.CargoConstants
+import org.rust.lang.RsConstants
 import org.rust.lang.core.psi.isRustFile
 import java.io.File
 
 class RsModTabTitleProvider : UniqueNameEditorTabTitleProvider() {
-    val MOD_FILE_NAME = "mod.rs"
-
     override fun getEditorTabTitle(project: Project, file: VirtualFile): String? {
-        if (file.isRustFile && MOD_FILE_NAME == file.name) {
-            return super.getEditorTabTitle(project, file) ?:
-                "${file.parent.name}${File.separator}${file.name}"
+        if ((file.isRustFile && file.name in EXPLICIT_FILES) || file.name == CargoConstants.MANIFEST_FILE) {
+            return super.getEditorTabTitle(project, file) ?: "${file.parent.name}${File.separator}${file.name}"
         }
 
         return null
+    }
+
+    companion object {
+        private val EXPLICIT_FILES = setOf(
+            RsConstants.MOD_RS_FILE,
+            RsConstants.LIB_RS_FILE,
+            RsConstants.MAIN_RS_FILE
+        )
     }
 }
