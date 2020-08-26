@@ -1,0 +1,25 @@
+- asm! (https://github.com/intellij-rust/intellij-rust/issues/1940)
+    - parse
+    - highlight and check arguments
+    - handle control flow in output variables
+    - check if feature is enabled
+    - mark as unsafe operation
+    - completion (options, in/out/...)
+
+- add parameter from function call (https://github.com/intellij-rust/intellij-rust/issues/3582)
+- change signature (https://github.com/intellij-rust/intellij-rust/issues/4927)
+
+- intention to create a method
+
+- variable can be immutable (https://github.com/intellij-rust/intellij-rust/issues/1004)
+- unused imports (https://github.com/intellij-rust/intellij-rust/issues/2158)
+    - replace star import with explicit import (https://github.com/intellij-rust/intellij-rust/issues/4339)
+- annotate unnecessarily qualified path (https://github.com/intellij-rust/intellij-rust/issues/5608)
+
+- expose private type https://doc.rust-lang.org/error-index.html#E0446
+- substitute generic types in parameter hints (https://github.com/intellij-rust/intellij-rust/issues/4308, parameter-hint-type-subst)
+
+- impl lifetime elisions
+- type substitution in qdoc (https://github.com/intellij-rust/intellij-rust/issues/3492)
+
+- improve inline function (inline parameters)
