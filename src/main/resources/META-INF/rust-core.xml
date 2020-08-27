@@ -813,7 +813,7 @@
             <category>Rust</category>
         </intentionAction>
         <intentionAction>
-            <className>org.rust.ide.intentions.SubstituteAssociatedTypeIntention</className>
+            <className>org.rust.ide.intentions.SubstituteTypeIntention</className>
             <category>Rust</category>
         </intentionAction>
 

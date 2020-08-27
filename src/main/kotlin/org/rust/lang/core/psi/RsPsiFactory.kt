@@ -519,6 +519,9 @@ class RsPsiFactory(
     fun createDynTraitType(pathText: String): RsTraitType =
         createFromText("type T = &dyn $pathText;}")
             ?: error("Failed to create trait type")
+
+    fun tryCreateTypeQual(type: String): RsTypeQual? =
+        createFromText("fn foo() { <$type>::foo(); }")
 }
 
 private fun String.iff(cond: Boolean) = if (cond) "$this " else " "

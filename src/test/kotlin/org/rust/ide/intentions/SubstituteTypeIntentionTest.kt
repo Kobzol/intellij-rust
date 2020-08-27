@@ -5,7 +5,7 @@
 
 package org.rust.ide.intentions
 
-class SubstituteAssociatedTypeIntentionTest : RsIntentionTestBase(SubstituteAssociatedTypeIntention()) {
+class SubstituteTypeIntentionTest : RsIntentionTestBase(SubstituteTypeIntention()) {
     fun `test unavailable on trait associated type`() = doUnavailableTest("""
         trait Trait {
             type Item;
@@ -197,7 +197,105 @@ class SubstituteAssociatedTypeIntentionTest : RsIntentionTestBase(SubstituteAsso
         }
     """)
 
-    fun `test import after substitution`() = doAvailableTest("""
+    fun `test substitute type alias`() = doAvailableTest("""
+        type T = u32;
+        fn foo() -> /*caret*/T { unreachable!() }
+    """, """
+        type T = u32;
+        fn foo() -> u32 { unreachable!() }
+    """)
+
+    fun `test substitute generic argument type context`() = doAvailableTest("""
+        type A<T> = T;
+        fn foo() -> /*caret*/A<u32> { unreachable!() }
+    """, """
+        type A<T> = T;
+        fn foo() -> u32 { unreachable!() }
+    """)
+
+    fun `test substitute generic argument expression context`() = doAvailableTest("""
+        type A<T> = T;
+        fn foo() {
+            let _ = A/*caret*/::<u32>::MAX;
+        }
+    """, """
+        type A<T> = T;
+        fn foo() {
+            let _ = u32::MAX;
+        }
+    """)
+
+    fun `test substitute recursive type alias`() = doAvailableTest("""
+        type A<T> = T;
+        type B<T> = A<T>;
+        fn foo(b: B/*caret*/<u32>) {}
+    """, """
+        type A<T> = T;
+        type B<T> = A<T>;
+        fn foo(b: u32) {}
+    """)
+
+    fun `test tuple type in type context`() = doAvailableTest("""
+        type A<T> = (T, T);
+        fn foo() -> /*caret*/A<u32> { unreachable!() }
+    """, """
+        type A<T> = (T, T);
+        fn foo() -> (u32, u32) { unreachable!() }
+    """)
+
+    fun `test tuple type in expression context`() = doAvailableTest("""
+        trait Trait {
+            fn foo(&self);
+        }
+        impl Trait for (u32, u32) {
+            fn foo(&self) {}
+        }
+
+        type A<T> = (T, T);
+        fn foo() {
+            A/*caret*/::<u32>::foo(&(0, 0));
+        }
+    """, """
+        trait Trait {
+            fn foo(&self);
+        }
+        impl Trait for (u32, u32) {
+            fn foo(&self) {}
+        }
+
+        type A<T> = (T, T);
+        fn foo() {
+            <(u32, u32)>::foo(&(0, 0));
+        }
+    """)
+
+    fun `test nested path in expression context`() = doAvailableTest("""
+        trait Trait {
+            fn foo(&self);
+        }
+        impl Trait for (u32, u32) {
+            fn foo(&self) {}
+        }
+        type A<T> = (T, T);
+
+        fn main() {
+            crate::A::<u32>::foo(&(0, 0));
+        }
+    """, """
+        trait Trait {
+            fn foo(&self);
+        }
+        impl Trait for (u32, u32) {
+            fn foo(&self) {}
+        }
+        type A<T> = (T, T);
+
+        fn main() {
+            <(u32, u32)>::foo(&(0, 0));
+        }
+    """)
+
+    fun `test import type after substitution`() = doAvailableTest("""
         use foo::B;
 
         mod foo {
