@@ -63,8 +63,20 @@ jobs:
                   components: rust-src, rustfmt, clippy
                   default: true
 
+            - name: Print evcxr
+              run: |
+                ls /home/runner/.cargo/bin
+                ls ~/.cargo/bin
+
+            - name: Cache evcxr
+              id: cache-evcxr
+              uses: actions/cache@v2
+              with:
+                  path: ~/.cargo/bin/evcxr
+                  key: ${{ runner.os }}-cache-evcxr-${{ matrix.rust-version }}
+
             - name: Install evcxr
-              if: matrix.os != 'windows-latest' && matrix.rust-version >= '1.40.0' # BACKCOMPAT: Rust 1.39.0
+              if: matrix.os != 'windows-latest' && matrix.rust-version >= '1.40.0' && steps.cache-evcxr.outputs.cache-hit != 'true' # BACKCOMPAT: Rust 1.39.0
               uses: actions-rs/cargo@v1
               with:
                   command: install
