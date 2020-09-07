@@ -3,7 +3,7 @@ name: check
 on:
     push:
         branches:
-            - master
+            - ci-test
             - staging
             - trying
     pull_request:

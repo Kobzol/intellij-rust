@@ -133,6 +133,7 @@ allprojects {
         }
 
         tasks.withType<Test>().configureEach {
+            maxParallelForks = 2
             jvmArgs = listOf("-Xmx2g", "-XX:-OmitStackTraceInFastThrow")
             // We need to prevent the platform-specific shared JNA library to loading from the system library paths,
             // because otherwise it can lead to compatibility issues.
@@ -287,6 +288,7 @@ project(":") {
     }
 
     tasks.withType<Test> {
+        maxParallelForks = 2
         testLogging {
             exceptionFormat = TestExceptionFormat.FULL
         }
