@@ -574,6 +574,11 @@
                          enabledByDefault="true" level="WEAK WARNING"
                          implementationClass="org.rust.ide.inspections.RsDuplicatedTraitMethodBindingInspection"/>
 
+        <localInspection language="Rust" groupName="Rust"
+                         displayName="Unused import"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="org.rust.ide.inspections.lints.RsUnusedImportInspection"/>
+
         <!-- Surrounders -->
 
         <lang.surroundDescriptor language="Rust"

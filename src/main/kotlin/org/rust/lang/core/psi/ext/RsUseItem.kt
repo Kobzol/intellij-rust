@@ -23,3 +23,6 @@ abstract class RsUseItemImplMixin : RsStubbedElementImpl<RsUseItemStub>, RsUseIt
 // #[prelude_import]
 val RsUseItem.hasPreludeImport: Boolean
     get() = greenStub?.hasPreludeImport ?: queryAttributes.hasAttribute("prelude_import")
+
+val RsUseItem.isReexport: Boolean
+    get() = visibility != RsVisibility.Private
