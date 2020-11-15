@@ -326,6 +326,136 @@ class RsUnusedImportInspectionTest : RsInspectionsTestBase(RsUnusedImportInspect
         <warning descr="Unused import: `foo::{}`">use foo::{};</warning>
     """)
 
+    fun `test remove use item`() = checkFixByText("Remove unused import", """
+        mod foo {
+            pub struct S;
+        }
+
+        <warning descr="Unused import: `foo::S`">use foo::S/*caret*/;</warning>
+    """, """
+        mod foo {
+            pub struct S;
+        }
+
+    """)
+
+    fun `test remove first import inside group`() = checkFixByText("Remove unused import", """
+        mod foo {
+            pub struct S;
+            pub struct T;
+        }
+
+        use foo::{<warning descr="Unused import: `S`">S/*caret*/</warning>, T};
+
+        fn bar(_: T) {}
+    """, """
+        mod foo {
+            pub struct S;
+            pub struct T;
+        }
+
+        use foo::{T};
+
+        fn bar(_: T) {}
+    """)
+
+    fun `test remove middle import inside group`() = checkFixByText("Remove unused import", """
+        mod foo {
+            pub struct R;
+            pub struct S;
+            pub struct T;
+        }
+
+        use foo::{R, <warning descr="Unused import: `S`">S/*caret*/</warning>, T};
+
+        fn bar(_: T, _: R) {}
+    """, """
+        mod foo {
+            pub struct R;
+            pub struct S;
+            pub struct T;
+        }
+
+        use foo::{R, T};
+
+        fn bar(_: T, _: R) {}
+    """)
+
+    fun `test remove last import inside group`() = checkFixByText("Remove unused import", """
+        mod foo {
+            pub struct S;
+            pub struct T;
+        }
+
+        use foo::{T, <warning descr="Unused import: `S`">S/*caret*/</warning>};
+
+        fn bar(_: T) {}
+    """, """
+        mod foo {
+            pub struct S;
+            pub struct T;
+        }
+
+        use foo::{T};
+
+        fn bar(_: T) {}
+    """)
+
+    fun `test remove inside group without siblings 1`() = checkFixByText("Remove unused import", """
+        mod foo {
+            pub struct S;
+        }
+
+        use foo::{<warning descr="Unused import: `S`">S/*caret*/</warning>};
+    """, """
+        mod foo {
+            pub struct S;
+        }
+
+    """)
+
+    fun `test remove inside group without siblings 2`() = checkFixByText("Remove unused import", """
+        mod foo {
+            mod bar {
+                pub struct S;
+            }
+        }
+
+        use foo::{<warning descr="Unused import: `bar::S`">bar::S/*caret*/</warning>};
+    """, """
+        mod foo {
+            mod bar {
+                pub struct S;
+            }
+        }
+
+    """)
+
+    fun `test remove in the middle of imports`() = checkFixByText("Remove unused import", """
+        mod foo {
+            pub struct R;
+            pub struct S;
+            pub struct T;
+        }
+
+        use foo::R;
+        <warning descr="Unused import: `foo::S`">use foo::S/*caret*/;</warning>
+        use foo::T;
+
+        fn bar(_: R, _: T) {}
+    """, """
+        mod foo {
+            pub struct R;
+            pub struct S;
+            pub struct T;
+        }
+
+        use foo::R;
+        use foo::T;
+
+        fn bar(_: R, _: T) {}
+    """)
+
     /*fun `test redundant use speck`() = checkByText("""
         mod foo {
             pub struct S;

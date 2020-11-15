@@ -8,6 +8,7 @@ package org.rust.ide.inspections.lints
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.parentOfType
 import org.rust.ide.inspections.RsProblemsHolder
+import org.rust.ide.inspections.fixes.RemoveUseSpeckFix
 import org.rust.lang.core.psi.RsUseItem
 import org.rust.lang.core.psi.RsUseSpeck
 import org.rust.lang.core.psi.RsVisitor
@@ -31,7 +32,8 @@ class RsUnusedImportInspection : RsLintInspection() {
             val element = getHighlightElement(useSpeck)
             holder.registerLintProblem(
                 element,
-                "Unused import: `${useSpeck.text}`"
+                "Unused import: `${useSpeck.text}`",
+                RemoveUseSpeckFix(useSpeck)
             )
         }
     }

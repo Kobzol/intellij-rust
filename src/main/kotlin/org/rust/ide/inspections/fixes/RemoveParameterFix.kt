@@ -13,8 +13,9 @@ import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.parentOfType
 import com.intellij.psi.util.parentOfTypes
 import org.rust.lang.core.psi.*
-import org.rust.lang.core.psi.RsElementTypes.COMMA
-import org.rust.lang.core.psi.ext.*
+import org.rust.lang.core.psi.ext.deleteWithSurroundingComma
+import org.rust.lang.core.psi.ext.hasSelfParameters
+import org.rust.lang.core.psi.ext.topLevelPattern
 
 
 /**
@@ -33,7 +34,7 @@ class RemoveParameterFix(binding: RsPatBinding, private val bindingName: String)
         val parameterIndex = function.valueParameterList?.valueParameterList?.indexOf(parameter) ?: -1
         if (parameterIndex == -1) return
 
-        parameter.deleteElementWithCommas()
+        parameter.deleteWithSurroundingComma()
         removeArguments(function, parameterIndex)
     }
 }
@@ -52,20 +53,6 @@ private fun removeArguments(function: RsFunction, parameterIndex: Int) {
             isMethod && call is RsCallExpr -> parameterIndex + 1 // UFCS
             else -> parameterIndex
         }
-        arguments.exprList.getOrNull(argumentIndex)?.deleteElementWithCommas()
+        arguments.exprList.getOrNull(argumentIndex)?.deleteWithSurroundingComma()
     }
-}
-
-private fun RsElement.deleteElementWithCommas() {
-    val followingComma = getNextNonCommentSibling()
-    if (followingComma?.elementType == COMMA) {
-        followingComma?.delete()
-    } else {
-        val precedingComma = getPrevNonCommentSibling()
-        if (precedingComma?.elementType == COMMA) {
-            precedingComma?.delete()
-        }
-    }
-
-    delete()
 }
