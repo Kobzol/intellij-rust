@@ -23,6 +23,11 @@
                          enabledByDefault="true" level="WARNING"
                          implementationClass="org.rust.toml.inspections.MissingFeaturesInspection"/>
 
+        <localInspection groupName="Rust"
+                         displayName="Crate not found"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="org.rust.toml.inspections.CrateNotFoundInspection"/>
+
         <applicationService serviceImplementation="org.rust.toml.crates.local.CratesLocalIndexService"/>
         <cachesInvalidator implementation="org.rust.toml.crates.local.CratesLocalIndexCachesInvalidator"/>
     </extensions>

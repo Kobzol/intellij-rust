@@ -189,3 +189,9 @@ val TomlValue.containingDependencyKey: TomlKey?
             (parentParent.parent as? TomlKeyValue)?.key
         }
     }
+
+val TomlValue.stringValue: String?
+    get() {
+        val kind = (this as? TomlLiteral)?.kind
+        return (kind as? TomlLiteralKind.String)?.value
+    }
