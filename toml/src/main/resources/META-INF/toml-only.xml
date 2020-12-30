@@ -28,7 +28,10 @@
                          enabledByDefault="true" level="WARNING"
                          implementationClass="org.rust.toml.inspections.CrateNotFoundInspection"/>
 
-        <applicationService serviceImplementation="org.rust.toml.crates.local.CratesLocalIndexService"/>
+        <applicationService
+            serviceInterface="org.rust.toml.crates.local.CrateResolverService"
+            serviceImplementation="org.rust.toml.crates.local.CratesLocalIndexService"
+            testServiceImplementation="org.rust.toml.crates.local.TestCrateResolver"/>
         <cachesInvalidator implementation="org.rust.toml.crates.local.CratesLocalIndexCachesInvalidator"/>
     </extensions>
 </idea-plugin>

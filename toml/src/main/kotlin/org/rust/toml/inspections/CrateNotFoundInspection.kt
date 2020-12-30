@@ -10,7 +10,7 @@ import com.intellij.psi.PsiElementVisitor
 import org.rust.cargo.CargoConstants
 import org.rust.ide.experiments.RsExperiments
 import org.rust.openapiext.isFeatureEnabled
-import org.rust.toml.crates.local.CratesLocalIndexService
+import org.rust.toml.crates.local.getCrateResolver
 import org.rust.toml.isDependencyKey
 import org.toml.lang.psi.*
 import org.toml.lang.psi.ext.TomlLiteralKind
@@ -58,8 +58,7 @@ class CrateNotFoundInspection : LocalInspectionTool() {
     }
 
     private fun handleDependency(dependency: Dependency, holder: ProblemsHolder) {
-        val indexService = CratesLocalIndexService.getInstance()
-        if (indexService.getCrate(dependency.name) == null) {
+        if (getCrateResolver().getCrate(dependency.name) == null) {
             holder.registerProblem(dependency.nameElement, "Crate ${dependency.name} not found")
         }
     }
