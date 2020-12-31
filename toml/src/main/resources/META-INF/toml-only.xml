@@ -28,6 +28,11 @@
                          enabledByDefault="true" level="WARNING"
                          implementationClass="org.rust.toml.inspections.CrateNotFoundInspection"/>
 
+        <localInspection groupName="Rust"
+                         displayName="Crate version not found"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="org.rust.toml.inspections.CrateVersionNotFoundInspection"/>
+
         <applicationService
             serviceInterface="org.rust.toml.crates.local.CrateResolverService"
             serviceImplementation="org.rust.toml.crates.local.CratesLocalIndexService"
