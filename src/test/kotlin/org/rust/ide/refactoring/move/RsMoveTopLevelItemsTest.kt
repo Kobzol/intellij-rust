@@ -924,6 +924,10 @@ class RsMoveTopLevelItemsTest : RsMoveTopLevelItemsTestBase() {
                 bar::bar_func();
                 let _ = BarStruct {};
             }
+            fn foo2() {
+                bar::bar_func();
+                let _ = BarStruct {};
+            }
         }
         mod mod2/*target*/ {}
         mod bar {
@@ -935,6 +939,11 @@ class RsMoveTopLevelItemsTest : RsMoveTopLevelItemsTestBase() {
         mod mod1 {
             use crate::bar;
             use crate::bar::BarStruct;
+
+            fn foo2() {
+                bar::bar_func();
+                let _ = BarStruct {};
+            }
         }
         mod mod2 {
             use crate::bar;
@@ -1023,9 +1032,7 @@ class RsMoveTopLevelItemsTest : RsMoveTopLevelItemsTestBase() {
         }
     """, """
     //- lib.rs
-        mod mod1 {
-            use crate::bar::Bar;
-        }
+        mod mod1 {}
         mod mod2 {
             use crate::bar::Bar;
 
@@ -1380,9 +1387,7 @@ class RsMoveTopLevelItemsTest : RsMoveTopLevelItemsTestBase() {
         mod mod2/*target*/ {}
     """, """
     //- lib.rs
-        mod mod1 {
-            use std::fs;
-        }
+        mod mod1 {}
         mod mod2 {
             use std::fs;
 
@@ -1402,9 +1407,7 @@ class RsMoveTopLevelItemsTest : RsMoveTopLevelItemsTestBase() {
         mod mod2/*target*/ {}
     """, """
     //- lib.rs
-        mod mod1 {
-            use std::sync::Arc;
-        }
+        mod mod1 {}
         mod mod2 {
             use std::sync::Arc;
 
@@ -1522,13 +1525,12 @@ class RsMoveTopLevelItemsTest : RsMoveTopLevelItemsTestBase() {
         mod mod1 {}
         mod mod2 {
             mod foo1 {
-                use crate::{mod1, mod2};
+                use crate::mod2;
 
                 fn test() { mod2::bar1(); }
             }
 
             mod foo2 {
-                use crate::mod1::*;
                 use crate::mod2::bar2;
 
                 fn test() { bar2(); }
@@ -1566,7 +1568,6 @@ class RsMoveTopLevelItemsTest : RsMoveTopLevelItemsTestBase() {
             }
 
             mod foo2 {
-                use crate::mod1::*;
                 use crate::mod2::Bar2;
 
                 fn test() { let _ = Bar2 {}; }
@@ -1584,7 +1585,12 @@ class RsMoveTopLevelItemsTest : RsMoveTopLevelItemsTestBase() {
             mod foo/*caret*/ {
                 mod test {
                     use super::*;
+
+                    fn baz() {
+                        bar();
+                    }
                 }
+                fn bar() {}
             }
         }
         mod mod2/*target*/ {}
@@ -1595,7 +1601,12 @@ class RsMoveTopLevelItemsTest : RsMoveTopLevelItemsTestBase() {
             mod foo {
                 mod test {
                     use super::*;
+
+                    fn baz() {
+                        bar();
+                    }
                 }
+                fn bar() {}
             }
         }
     """)
@@ -1878,7 +1889,7 @@ class RsMoveTopLevelItemsTest : RsMoveTopLevelItemsTestBase() {
         }
 
         mod usage {
-            use crate::{mod1, mod2};
+            use crate::mod2;
 
             fn test() {
                 mod2::foo1();
@@ -1921,7 +1932,7 @@ class RsMoveTopLevelItemsTest : RsMoveTopLevelItemsTestBase() {
         }
 
         mod usage {
-            use crate::{inner1, inner2};
+            use crate::inner2;
 
             fn test() {
                 inner2::mod2::foo1();
@@ -2309,6 +2320,12 @@ class RsMoveTopLevelItemsTest : RsMoveTopLevelItemsTestBase() {
         mod mod2/*target*/ {}
         mod usage {
             use crate::mod1::{foo1, foo2, bar};
+
+            fn foo() {
+                foo1();
+                foo2();
+                bar();
+            }
         }
     """, """
     //- lib.rs
@@ -2323,6 +2340,12 @@ class RsMoveTopLevelItemsTest : RsMoveTopLevelItemsTestBase() {
         mod usage {
             use crate::mod1::bar;
             use crate::mod2::{foo1, foo2};
+
+            fn foo() {
+                foo1();
+                foo2();
+                bar();
+            }
         }
     """)
 
@@ -2345,6 +2368,12 @@ class RsMoveTopLevelItemsTest : RsMoveTopLevelItemsTestBase() {
                 foo1::{foo1_func, foo1_inner::foo1_inner_func},
                 foo2::foo2_func,
             };
+
+            fn foo() {
+                foo1_func();
+                foo1_inner_func();
+                foo2_func();
+            }
         }
     """, """
     //- lib.rs
@@ -2364,6 +2393,12 @@ class RsMoveTopLevelItemsTest : RsMoveTopLevelItemsTestBase() {
         mod usage1 {
             use crate::mod2::foo1::{foo1_func, foo1_inner::foo1_inner_func};
             use crate::mod2::foo2::foo2_func;
+
+            fn foo() {
+                foo1_func();
+                foo1_inner_func();
+                foo2_func();
+            }
         }
     """)
 
@@ -2623,9 +2658,7 @@ class RsMoveTopLevelItemsTest : RsMoveTopLevelItemsTestBase() {
         mod foo {
             pub struct Foo {}
         }
-        mod mod1 {
-            use crate::foo::Foo as Bar;
-        }
+        mod mod1 {}
         mod mod2 {
             use crate::foo::Foo as Bar;
 
