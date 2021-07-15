@@ -181,7 +181,6 @@ fun <T : RsElement> instantiatePathGenerics(
     return BoundElement(resolved.element, subst + newSubst, psiSubst.assoc.mapValues { it.value.type })
 }
 
-@Suppress("DuplicatedCode")
 fun pathPsiSubst(path: RsPath, resolved: RsGenericDeclaration): RsPsiSubstitution {
     val args = pathTypeParameters(path)
 
@@ -261,31 +260,30 @@ fun pathPsiSubst(path: RsPath, resolved: RsGenericDeclaration): RsPsiSubstitutio
 
     val regionParameters = resolved.lifetimeParameters
     val regionArguments = path.typeArgumentList?.lifetimeList
-    val regionSubst = regionParameters.withIndex().associate { (i, param) ->
-        val value = if (areOptionalArgs && regionArguments == null) {
-            Value.OptionalAbsent
-        } else if (regionArguments != null && i < regionArguments.size) {
-            Value.Present(regionArguments[i])
-        } else {
-            Value.RequiredAbsent
-        }
-        param to value
-    }
+    val regionSubst = parametersToSubst(regionParameters, regionArguments, areOptionalArgs)
 
     val constParameters = resolved.constParameters
     val constArguments = path.typeArgumentList?.exprList
-    val constSubst = constParameters.withIndex().associate { (i, param) ->
-        val value = if (areOptionalArgs && constArguments == null) {
+    val constSubst = parametersToSubst(constParameters, constArguments, areOptionalArgs)
+
+    return RsPsiSubstitution(typeSubst, regionSubst, constSubst, assocTypes)
+}
+
+private fun <Param, Val>parametersToSubst(
+    parameters: List<Param>,
+    values: List<Val>?,
+    areOptionalArgs: Boolean
+): Map<Param, Value<Val>> {
+    return parameters.withIndex().associate { (i, param) ->
+        val value = if (areOptionalArgs && values == null) {
             Value.OptionalAbsent
-        } else if (constArguments != null && i < constArguments.size) {
-            Value.Present(constArguments[i])
+        } else if (values != null && i < values.size) {
+            Value.Present(values[i])
         } else {
             Value.RequiredAbsent
         }
         param to value
     }
-
-    return RsPsiSubstitution(typeSubst, regionSubst, constSubst, assocTypes)
 }
 
 private sealed class RsPsiPathParameters {

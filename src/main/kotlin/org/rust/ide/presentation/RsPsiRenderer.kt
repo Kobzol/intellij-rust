@@ -50,6 +50,9 @@ fun RsTraitRef.getStubOnlyText(subst: Substitution = emptySubstitution, renderLi
 fun RsPsiRenderer.renderTypeReference(ref: RsTypeReference): String =
     buildString { appendTypeReference(this, ref) }
 
+fun RsPsiRenderer.renderTraitRef(ref: RsTraitRef): String =
+    buildString { appendPath(this, ref.path) }
+
 fun RsPsiRenderer.renderValueParameterList(list: RsValueParameterList): String =
     buildString { appendValueParameterList(this, list) }
 
